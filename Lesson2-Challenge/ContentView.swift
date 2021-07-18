@@ -14,9 +14,13 @@ struct ContentView: View {
     @State private var deck = [Card]()
     
     // Used to change the color of the suits
-    @State private var red:Bool = true
+    @State private var currentlyRed:Bool = true
     
-    @State private var cardStatus:String = "Your card deck"
+    // Tracks the status of each activity; defaults
+    @State private var cardStatus:String = "Empty deck"
+    
+    // Tracks the state of the card, which appears on the screen.
+    @State private var currentCard:Card = Card()
     
     
     // MARK: UI Swift Code
@@ -35,11 +39,13 @@ struct ContentView: View {
                    addCard()
                 }
                 .padding()
+                .font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
                 
                 Button("Draw card") {
-                    print()
+                    drawCard()
                 }
                 .padding()
+                .font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
                 
             }
             
@@ -53,23 +59,21 @@ struct ContentView: View {
                     .cornerRadius(30)
                     .shadow(radius: /*@START_MENU_TOKEN@*/10/*@END_MENU_TOKEN@*/)
                 
-                
                 VStack {
                     // Top left card
                     HStack {
                         
-                        if red == true {
-                            Label("10", systemImage: "suit.club.fill")
+                        if currentlyRed == true {
+                            Label(currentCard.name, systemImage: "suit.\(currentCard.suit).fill")
                                 .padding()
                                 .padding()
                                 .foregroundColor(.red)
                                 
                         } else {
-                            Label("10", systemImage: "suit.club.fill")
+                            Label(currentCard.name, systemImage: "suit.\(currentCard.suit).fill")
                                 .padding()
                                 .padding()
                                 .foregroundColor(.black)
-                                
                         }
                         
                         Spacer()
@@ -79,11 +83,22 @@ struct ContentView: View {
                     
                     // Bottom right card
                     HStack {
+                        // Makes the text go to the far-right
                         Spacer()
-                        Label("10", systemImage: "suit.club.fill")
-                            .padding()
-                            .padding()
-                            .foregroundColor(.red)
+                        
+                        // Changes color based on suit
+                        if currentlyRed == true {
+                            // Makes the suit symbol like suit.club.fill
+                            Label(currentCard.name, systemImage: "suit.\(currentCard.suit).fill")
+                                .padding()
+                                .padding()
+                                .foregroundColor(.red)
+                        } else {
+                            Label(currentCard.name, systemImage: "suit.\(currentCard.suit).fill")
+                                .padding()
+                                .padding()
+                                .foregroundColor(.black)
+                        }
                     }
                     
                 }
@@ -119,6 +134,29 @@ struct ContentView: View {
             deck.append(newCard)
             // Makes it look like "Generated a King of Clubs
             cardStatus = "Generated a \(newCard.name) of \(newCard.suit.capitalized)s"
+        }
+        
+    }
+    
+    /*
+     Draws a random card from our deck, if there are cards in the deck.
+     */
+    func drawCard() {
+        
+        // If there are no cards in the deck, then say so.
+        if deck.count == 0 {
+            // Update the top text
+            cardStatus = "No cards in the deck."
+        } else {
+            // Grab a random card from the deck
+            currentCard = deck.randomElement()!
+            
+            // Change the color to red/ black depending on the card's suit
+            currentlyRed = currentCard.determineColor(suit: currentCard.suit)
+            
+            // Say which card we drew, which updates the label at the top
+            cardStatus = "Drew a \(currentCard.name) of \(currentCard.suit.capitalized)s"
+            
         }
         
     }
@@ -164,6 +202,23 @@ struct Card: Equatable {
         
         return royalName
     }
+    
+    /*
+     Determines, whether/ not the color should be black based on the suit.
+     */
+    func determineColor(suit: String) -> Bool {
+        // Assume it is not read, then it is black
+        var redColor = false
+        
+        // Unless we find here that it is red
+        if suit == "diamond" || suit == "heart" {
+            redColor = true
+        // If the suit is not red, then it is black
+        }
+        
+        return redColor
+    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
